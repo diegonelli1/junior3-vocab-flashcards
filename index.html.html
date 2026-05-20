@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Junior 3 Flashcards</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #3b6fd4;
+    --blue-dark: #2a4fa0;
+    --blue-light: #e8f0ff;
+    --yellow: #ffd84d;
+    --coral: #ff6b6b;
+    --mint: #4ecdc4;
+    --purple: #a78bfa;
+    --white: #ffffff;
+    --text: #1e2d5a;
+    --card-radius: 18px;
+    --shadow: 0 8px 24px rgba(59,111,212,0.13);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: #f0f5ff;
+    min-height: 100vh;
+    color: var(--text);
+  }
+
+  /* Background dots */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, #c7d9ff 1.5px, transparent 1.5px);
+    background-size: 30px 30px;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    position: relative;
+    z-index: 1;
+    background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 60%, #5b8ef0 100%);
+    padding: 36px 20px 28px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(42,79,160,0.25);
+  }
+
+  header h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: var(--white);
+    letter-spacing: 1px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
+  header p {
+    color: rgba(255,255,255,0.85);
+    margin-top: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .badge {
+    display: inline-block;
+    background: var(--yellow);
+    color: var(--blue-dark);
+    font-weight: 800;
+    font-size: 0.8rem;
+    padding: 4px 14px;
+    border-radius: 99px;
+    margin-top: 12px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Filter tabs */
+  .filters {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    padding: 24px 20px 10px;
+  }
+
+  .filter-btn {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 8px 18px;
+    border-radius: 99px;
+    border: 2px solid var(--blue);
+    background: white;
+    color: var(--blue);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--blue);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59,111,212,0.25);
+  }
+
+  /* Stats bar */
+  .stats {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #6b7db3;
+    font-weight: 700;
+    padding: 8px 0 4px;
+  }
+
+  /* Grid */
+  .container {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px 28px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* Flashcard */
+  .flashcard {
+    height: 150px;
+    perspective: 1000px;
+    cursor: pointer;
+  }
+
+  .flashcard-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+    border-radius: var(--card-radius);
+  }
+
+  .flashcard.flipped .flashcard-inner,
+  .flashcard:hover .flashcard-inner {
+    transform: rotateY(180deg);
+  }
+
+  .flashcard-front, .flashcard-back {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--card-radius);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .flashcard-front {
+    background: var(--white);
+    border: 2.5px solid #dce8ff;
+  }
+
+  .flashcard-front .word {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.15rem;
+    color: var(--blue-dark);
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .flashcard-front .category-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 10px;
+  }
+
+  .flashcard-front .hint {
+    font-size: 0.7rem;
+    color: #a0b0d0;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+
+  .flashcard-back {
+    background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+    transform: rotateY(180deg);
+  }
+
+  .flashcard-back .definition {
+    font-size: 0.95rem;
+    color: white;
+    text-align: center;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  /* Color coding by category */
+  .flashcard[data-cat="shopping"] .flashcard-front { border-color: #ffd84d; }
+  .flashcard[data-cat="shopping"] .category-dot { background: #ffd84d; }
+  .flashcard[data-cat="shopping"] .flashcard-back { background: linear-gradient(135deg, #b8860b, #d4a017); }
+
+  .flashcard[data-cat="chores"] .flashcard-front { border-color: #4ecdc4; }
+  .flashcard[data-cat="chores"] .category-dot { background: #4ecdc4; }
+  .flashcard[data-cat="chores"] .flashcard-back { background: linear-gradient(135deg, #2a7a74, #4ecdc4); }
+
+  .flashcard[data-cat="personality"] .flashcard-front { border-color: #ff6b6b; }
+  .flashcard[data-cat="personality"] .category-dot { background: #ff6b6b; }
+  .flashcard[data-cat="personality"] .flashcard-back { background: linear-gradient(135deg, #c0392b, #ff6b6b); }
+
+  .flashcard[data-cat="grammar"] .flashcard-front { border-color: #a78bfa; }
+  .flashcard[data-cat="grammar"] .category-dot { background: #a78bfa; }
+  .flashcard[data-cat="grammar"] .flashcard-back { background: linear-gradient(135deg, #6d28d9, #a78bfa); }
+
+  .flashcard[data-cat="clothes"] .flashcard-front { border-color: #f97316; }
+  .flashcard[data-cat="clothes"] .category-dot { background: #f97316; }
+  .flashcard[data-cat="clothes"] .flashcard-back { background: linear-gradient(135deg, #c2410c, #f97316); }
+
+  /* Legend */
+  .legend {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    padding: 0 20px 4px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #6b7db3;
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 0 0 32px;
+    font-size: 0.8rem;
+    color: #a0b0d0;
+    font-weight: 600;
+  }
+
+  @media (max-width: 480px) {
+    .container { padding: 16px; gap: 14px; }
+    header { padding: 24px 16px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>⭐ Junior 3 Flashcards ⭐</h1>
+  <p>Tap or hover a card to reveal the meaning!</p>
+  <span class="badge">50 words</span>
+</header>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="filterCards('all')">All</button>
+  <button class="filter-btn" onclick="filterCards('shopping')">🛒 Shopping</button>
+  <button class="filter-btn" onclick="filterCards('chores')">🧹 Chores</button>
+  <button class="filter-btn" onclick="filterCards('personality')">😊 Personality</button>
+  <button class="filter-btn" onclick="filterCards('grammar')">📝 Grammar</button>
+  <button class="filter-btn" onclick="filterCards('clothes')">👕 Clothes</button>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot" style="background:#ffd84d"></span> Shopping</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#4ecdc4"></span> Chores</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#ff6b6b"></span> Personality</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#a78bfa"></span> Grammar</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#f97316"></span> Clothes</div>
+</div>
+
+<div class="stats" id="stats">Showing all 50 cards</div>
+
+<div class="container" id="cardGrid"></div>
+
+<footer>Click any card to flip it · Use the filters to study by topic</footer>
+
+<script>
+const cards = [
+  { word: "department store", def: "A big shop with many sections", cat: "shopping" },
+  { word: "chemist's", def: "A place where you buy medicine", cat: "shopping" },
+  { word: "bookshop", def: "A shop where you buy books", cat: "shopping" },
+  { word: "shoe shop", def: "A place where you buy shoes", cat: "shopping" },
+  { word: "sports shop", def: "You can buy sports equipment here", cat: "shopping" },
+  { word: "special offer", def: "A product at a cheaper price", cat: "shopping" },
+  { word: "receipt", def: "A paper showing what you bought", cat: "shopping" },
+  { word: "cashier", def: "The person who takes your money", cat: "shopping" },
+  { word: "queue", def: "People waiting in line", cat: "shopping" },
+  { word: "shopping trolley", def: "A big cart in supermarkets", cat: "shopping" },
+  { word: "shopping basket", def: "A small basket for shopping", cat: "shopping" },
+  { word: "carry the shopping", def: "Take shopping bags home", cat: "shopping" },
+  { word: "pay in cash", def: "Use money notes and coins", cat: "shopping" },
+  { word: "pay by card", def: "Use a debit or credit card", cat: "shopping" },
+  { word: "changing rooms", def: "A place to try clothes on", cat: "shopping" },
+  { word: "try on", def: "Test clothes before buying them", cat: "shopping" },
+  { word: "friendly staff", def: "Nice workers in a shop/café", cat: "shopping" },
+  { word: "opening hours", def: "The times a place is open", cat: "shopping" },
+  { word: "book a table", def: "Reserve a table in a café", cat: "shopping" },
+  { word: "discount", def: "A lower price", cat: "shopping" },
+  { word: "customer", def: "A person buying something", cat: "shopping" },
+  { word: "shop assistant", def: "A person helping customers", cat: "shopping" },
+  { word: "cheap", def: "Not expensive", cat: "shopping" },
+  { word: "crowded", def: "Full of people", cat: "shopping" },
+  { word: "queue up", def: "Stand in line", cat: "shopping" },
+  { word: "vacuum your room", def: "Clean using a vacuum cleaner", cat: "chores" },
+  { word: "set the table", def: "Prepare plates and glasses", cat: "chores" },
+  { word: "clear the table", def: "Remove plates after eating", cat: "chores" },
+  { word: "feed the dog", def: "Give food to your dog", cat: "chores" },
+  { word: "take out the rubbish", def: "Put garbage outside", cat: "chores" },
+  { word: "water the plants", def: "Give water to plants", cat: "chores" },
+  { word: "hang out", def: "Spend time relaxing with friends", cat: "chores" },
+  { word: "organised", def: "A person who plans things well", cat: "personality" },
+  { word: "messy", def: "Not tidy or organised", cat: "personality" },
+  { word: "patient", def: "Calm when waiting", cat: "personality" },
+  { word: "bossy", def: "Always telling people what to do", cat: "personality" },
+  { word: "quiet", def: "Not loud", cat: "personality" },
+  { word: "loud", def: "Making a lot of noise", cat: "personality" },
+  { word: "more expensive than", def: "Comparative adjective", cat: "grammar" },
+  { word: "the best", def: "Superlative of GOOD", cat: "grammar" },
+  { word: "worse than", def: "Comparative of BAD", cat: "grammar" },
+  { word: "too expensive", def: "More expensive than acceptable", cat: "grammar" },
+  { word: "not big enough", def: "Smaller than necessary", cat: "grammar" },
+  { word: "as interesting as", def: "Two things are equal", cat: "grammar" },
+  { word: "comfortable", def: "Feeling relaxed and good", cat: "grammar" },
+  { word: "medium", def: "A clothes size", cat: "clothes" },
+  { word: "large", def: "A big clothes size", cat: "clothes" },
+  { word: "hoodie", def: "A sweatshirt with a hood", cat: "clothes" },
+  { word: "trainers", def: "Sports shoes", cat: "clothes" },
+  { word: "jeans", def: "Blue denim trousers", cat: "clothes" },
+];
+
+function buildCards(filter) {
+  const grid = document.getElementById('cardGrid');
+  const stats = document.getElementById('stats');
+  const filtered = filter === 'all' ? cards : cards.filter(c => c.cat === filter);
+  stats.textContent = filter === 'all'
+    ? `Showing all ${filtered.length} cards`
+    : `Showing ${filtered.length} card${filtered.length !== 1 ? 's' : ''} · ${filter.charAt(0).toUpperCase() + filter.slice(1)}`;
+
+  grid.innerHTML = filtered.map(c => `
+    <div class="flashcard" data-cat="${c.cat}" onclick="this.classList.toggle('flipped')">
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <span class="word">${c.word}</span>
+          <span class="category-dot"></span>
+          <span class="hint">tap to flip</span>
+        </div>
+        <div class="flashcard-back">
+          <span class="definition">${c.def}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterCards(cat) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  buildCards(cat);
+}
+
+buildCards('all');
+</script>
+</body>
+</html>
